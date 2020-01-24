@@ -1,0 +1,88 @@
+# serverless.yml
+
+service: IOW-RETRIEVER-CAPTURE
+
+provider:
+  name: aws
+  region: 'us-west-2'
+  stage: ${opt:stage, 'TEST'}
+  runtime: python3.7
+  memorySize: 256
+  logRetentionInDays: 30
+  deploymentBucket:
+    name: iow-cloud-applications
+  stackTags:
+    "wma:applicationId": "Retriever Capture Loader"
+    "wma:contact": "Jim Kreft jkreft@usgs.gov"
+    "wma:environment": ${self:provider.stage}
+
+custom:
+  accountNumber : ${ssm:/iow/aws/accountNumber}
+  vpc:
+    securityGroupIds:
+      - ${ssm:/iow/retriever-capture/vpc/securityGroupId}
+    subnetIds:
+      - ${ssm:/iow/retriever-capture/vpc/subnetId}
+  db:
+    host: ${ssm:/iow/retriever-capture/${self:provider.stage}/database/host}
+    user: capture_owner
+    password: ${ssm:/aws/reference/secretsmanager/NWISWEB-RETRIEVER-CAPTURE-POSTGRES-${self:provider.stage}~true}
+    name: "retriever_capture"
+  environments:
+    TEST: test
+    QA: qa
+    PROD-EXTERNAL: prod-external
+functions:
+  iowRetrieverCapture:
+    handler: src.load.lambda_handler
+    onError: arn:aws:sns:us-west-2:${self:custom.accountNumber}:IOW-RETRIEVER-CAPTURE-${self:provider.stage}
+    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    events:
+      - s3:
+          bucket: "triggering"
+          event: s3:ObjectCreated:Put
+          rules:
+            - suffix: .json
+    environment:
+      DB_HOST: ${self:custom.db.host}
+      DB_USER: ${self:custom.db.user}
+      DB_NAME: ${self:custom.db.name}
+      DB_PASSWORD: ${self:custom.db.password}
+      AWS_DEPLOYMENT_REGION: ${self:provider.region}
+    vpc: ${self:custom.vpc}
+
+resources:
+  Resources:
+    S3BucketTriggering:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
+        AccessControl: Private
+        LifecycleConfiguration:
+          Rules:
+            - ExpirationInDays: 1
+              Status: Enabled
+    IowRetrieverCaptureLambdaPermissionTriggeringS3:
+      Type: 'AWS::Lambda::Permission'
+      Properties:
+        FunctionName:
+          'Fn::GetAtt':
+            - IowRetrieverCaptureLambdaFunction
+            - Arn
+        Principal: 's3.amazonaws.com'
+        Action: 'lambda:InvokeFunction'
+        SourceAccount:
+          Ref: AWS::AccountId
+        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
+
+plugins:
+  - serverless-python-requirements
+
+package:
+  exclude:
+    - node_modules/**
+    - Dockerfile
+    - .dockerignore
+    - Jenkinsfile
+    - package.json
+    - package-lock.json
