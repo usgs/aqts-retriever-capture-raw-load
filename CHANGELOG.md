@@ -6,5 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/USGS/retriever-capture/compare/retriever-capture/compare/<nextVersion>...master)
 ### Added
+- Manage SNS entry if missing for tier
+
 ### Changed
+- Update Jenkinsfile pipeline for Aurora database
+
 ### Fixed
