@@ -16,6 +16,7 @@ pipeline {
             }
             steps {
                 sh '''
+                ./sns.sh ${DEPLOY_STAGE}
                 ls -al
                 npm install serverless
                 ls -al
