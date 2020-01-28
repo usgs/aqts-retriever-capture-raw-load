@@ -7,9 +7,11 @@ cache: pip
 
 install:
   - pip install -r requirements.txt
+  - pip install coverage
 
 script:
-  - python -m unittest
+#  - python -m unittest
+  - coverage run -m unittest discover
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
