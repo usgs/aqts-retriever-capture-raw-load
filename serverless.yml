@@ -1,18 +1,18 @@
 # serverless.yml
 
-service: IOW-RETRIEVER-CAPTURE
+service: aqts-retriever-capture-raw-load
 
 provider:
   name: aws
   region: 'us-west-2'
-  stage: ${opt:stage, 'TEST'}
-  runtime: python3.7
+  stage: ${opt:stage, 'test'}
+  runtime: python3.8
   memorySize: 256
   logRetentionInDays: 30
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
-    "wma:applicationId": "Retriever Capture Loader"
+    "wma:applicationId": "Aquarius TS Retriever Capture Raw Loader"
     "wma:contact": "Jim Kreft jkreft@usgs.gov"
     "wma:environment": ${self:provider.stage}
 
@@ -35,14 +35,9 @@ custom:
 functions:
   iowRetrieverCapture:
     handler: src.load.lambda_handler
-    onError: arn:aws:sns:us-west-2:${self:custom.accountNumber}:IOW-RETRIEVER-CAPTURE-${self:provider.stage}
+    onError:
+      Ref: deadLetterQueue
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
-    events:
-      - s3:
-          bucket: "triggering"
-          event: s3:ObjectCreated:Put
-          rules:
-            - suffix: .json
     environment:
       DB_HOST: ${self:custom.db.host}
       DB_USER: ${self:custom.db.user}
@@ -53,27 +48,11 @@ functions:
 
 resources:
   Resources:
-    S3BucketTriggering:
-      Type: AWS::S3::Bucket
+    deadLetterQueue:
+      Type: AWS::SNS::Topic
       Properties:
-        BucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
-        AccessControl: Private
-        LifecycleConfiguration:
-          Rules:
-            - ExpirationInDays: 1
-              Status: Enabled
-    IowRetrieverCaptureLambdaPermissionTriggeringS3:
-      Type: 'AWS::Lambda::Permission'
-      Properties:
-        FunctionName:
-          'Fn::GetAtt':
-            - IowRetrieverCaptureLambdaFunction
-            - Arn
-        Principal: 's3.amazonaws.com'
-        Action: 'lambda:InvokeFunction'
-        SourceAccount:
-          Ref: AWS::AccountId
-        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
+        DisplayName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
+        TopicName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
 
 plugins:
   - serverless-python-requirements
