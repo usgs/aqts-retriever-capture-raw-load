@@ -1,11 +1,12 @@
 """
 ETL loads content S3 and persist it into an RDS
 """
+import logging
+
 from .etl.event_processor import TriggerEvent
 from .etl.rds import RDS
 from .etl.config import CONFIG
 
-import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -16,13 +17,18 @@ def etl(trigger_event):
     event.extract(trigger_event)
 
     rds = RDS()
+    record_ids = []
     try:
         rds.connect()
         for datum in event.data:
             logger.debug(f'Data to be persisted: {datum}.')
-            rds.persist_data(datum)
+            record_id = rds.persist_data(datum)
+            record_ids.append(record_id)
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
+        raise e
+    else:
+        return record_ids
     finally:
         rds.disconnect()
         logger.debug('Disconnected from database.')
@@ -35,16 +41,13 @@ def lambda_handler(event, context):
     :param context:
     :return: success or fail status
     """
+    response = None
     try:
         logger.debug(event)
-        etl(event)
-        return {
-            'statusCode': 200,
-            'body': 'Successfully processed S3 Event'
-        }
+        record_ids = etl(event)
     except Exception as e:
         logger.info(f'About to exit with this exception: {repr(e)}')
-        return {
-            'statusCode': 500,
-            'body': 'Error processing S3 Event %s' % repr(e)
-        }
+        raise e
+    else:
+        response = {'ids': record_ids}
+    return response

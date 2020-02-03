@@ -67,6 +67,10 @@ class RDS:
             logger.debug(f'Error during SQL execution: {repr(e)}', exc_info=True)
             logger.debug('Transaction will be rolled back.')
             self.conn.rollback()
+        else:
+            id_of_new_record = self.cursor.fetchone()[0]
+            logger.debug(f'New record ID: {id_of_new_record}')
+            return id_of_new_record
 
     def persist_data(self, datum):
         """
@@ -95,7 +99,8 @@ class RDS:
             (start_time, response_time, response_code, url, api,
              script_name, script_pid,
              parameters, json_content)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id;"""
         values = (
             convert_total_seconds_to_datetime(datum.start_time),
             convert_total_seconds_to_datetime(datum.response_time),
@@ -109,11 +114,13 @@ class RDS:
         )
         logger.debug(f'Values: {values}')
         logger.debug('Inserting data in the database.')
-        self._execute_sql(insert_json_data,
-                          (convert_total_seconds_to_datetime(datum.start_time),
-                           convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
-                           datum.url, api, datum.script_name, int(datum.script_pid),
-                           datum.parameters, datum.content))
+        db_resp = self._execute_sql(
+            insert_json_data, (convert_total_seconds_to_datetime(datum.start_time),
+            convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
+            datum.url, api, datum.script_name, int(datum.script_pid),
+            datum.parameters, datum.content)
+        )
+        return db_resp
 
     @classmethod
     def validate_contains(cls, variable_name, actual):
