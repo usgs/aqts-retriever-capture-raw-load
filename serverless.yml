@@ -20,9 +20,9 @@ custom:
   accountNumber : ${ssm:/iow/aws/accountNumber}
   vpc:
     securityGroupIds:
-      - ${ssm:/iow/retriever-capture/vpc/securityGroupId}
+      - ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupId}
     subnetIds:
-      - ${ssm:/iow/retriever-capture/vpc/subnetId}
+      - ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
   db:
     host: ${ssm:/iow/retriever-capture/${self:provider.stage}/database/host}
     credentials: ${ssm:/aws/reference/secretsmanager/NWISWEB-RETRIEVER-CAPTURE-POSTGRES-${self:provider.stage}~true}
