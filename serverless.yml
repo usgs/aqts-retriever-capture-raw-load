@@ -25,8 +25,7 @@ custom:
       - ${ssm:/iow/retriever-capture/vpc/subnetId}
   db:
     host: ${ssm:/iow/retriever-capture/${self:provider.stage}/database/host}
-    user: capture_owner
-    password: ${ssm:/aws/reference/secretsmanager/NWISWEB-RETRIEVER-CAPTURE-POSTGRES-${self:provider.stage}~true}
+    credentials: ${ssm:/aws/reference/secretsmanager/NWISWEB-RETRIEVER-CAPTURE-POSTGRES-${self:provider.stage}~true}
     name: "retriever_capture"
   environments:
     TEST: test
@@ -40,9 +39,9 @@ functions:
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     environment:
       DB_HOST: ${self:custom.db.host}
-      DB_USER: ${self:custom.db.user}
+      DB_USER: ${self:custom.db.credentials.user}
       DB_NAME: ${self:custom.db.name}
-      DB_PASSWORD: ${self:custom.db.password}
+      DB_PASSWORD: ${self:custom.db.credentials.password}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
 
