@@ -28,7 +28,7 @@ class RDS:
 
     def __init__(self):
         """
-        connect to the queue resource
+        connect to the database resource
         """
         self.connection_parameters = {
             'host': CONFIG['rds']['host'],
@@ -115,10 +115,12 @@ class RDS:
         logger.debug(f'Values: {values}')
         logger.debug('Inserting data in the database.')
         db_resp = self._execute_sql(
-            insert_json_data, (convert_total_seconds_to_datetime(datum.start_time),
-            convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
-            datum.url, api, datum.script_name, int(datum.script_pid),
-            datum.parameters, datum.content)
+            insert_json_data, (
+                convert_total_seconds_to_datetime(datum.start_time),
+                convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
+                datum.url, api, datum.script_name, int(datum.script_pid),
+                datum.parameters, datum.content
+            )
         )
         return db_resp
 

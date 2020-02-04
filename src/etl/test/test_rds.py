@@ -1,10 +1,34 @@
-import unittest
+import json
+from unittest import TestCase, mock
 
 from src.etl.rds import RDS
 from src.etl.rds import ValidationException
 
 
-class RdsValidationTests(unittest.TestCase):
+class TestRDS(TestCase):
+
+    def setUp(self):
+        self.host = 'some-host'
+        self.database = 'some-database'
+        self.user = 'some-user'
+        self.password = 'some-password'
+        self.config = {
+            'host': self.host,
+            'database': self.database,
+            'user': self.user,
+            'password': self.password
+        }
+
+    @mock.patch('src.etl.rds.connect')
+    def test_db_connect(self, mock_connection):
+        mock_connection.return_value.cursor.return_value = mock.Mock()
+        with mock.patch.dict('src.etl.rds.CONFIG', self.config):
+            rds = RDS()
+            rds.connect()
+            mock_connection.assert_called_once()
+
+
+class RdsValidationTests(TestCase):
 
     def test_this_test_class_works(self):
         self.assertTrue(True, "works")
