@@ -7,7 +7,7 @@ pipeline {
         }
     }
     parameters {
-        choice(choices: ['test', 'qa', 'prod-external'], description: 'Deploy Stage (i.e. tier)', name: 'DEPLOY_STAGE')
+        choice(choices: ['TEST', 'QA', 'PROD-EXTERNAL'], description: 'Deploy Stage (i.e. tier)', name: 'DEPLOY_STAGE')
     }
     stages {
         stage('run build the zip file for lambda') {

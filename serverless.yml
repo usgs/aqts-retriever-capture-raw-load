@@ -5,7 +5,7 @@ service: aqts-retriever-capture-raw-load
 provider:
   name: aws
   region: 'us-west-2'
-  stage: ${opt:stage, 'test'}
+  stage: ${opt:stage, 'TEST'}
   runtime: python3.8
   memorySize: 256
   logRetentionInDays: 30
@@ -50,8 +50,8 @@ resources:
     deadLetterQueue:
       Type: AWS::SNS::Topic
       Properties:
-        DisplayName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
-        TopicName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
+        DisplayName: aqts-retrieve-capture-raw-load-dlq-${self:custom.environments.${self:provider.stage}}
+        TopicName: aqts-retrieve-capture-raw-load-dlq-${self:custom.environments.${self:provider.stage}}
 
 plugins:
   - serverless-python-requirements
