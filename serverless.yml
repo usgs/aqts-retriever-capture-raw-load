@@ -4,7 +4,7 @@ service: aqts-retriever-capture-raw-load
 
 provider:
   name: aws
-  region: 'us-west-2'
+  region: ${opt:region, 'us-west-2'}
   stage: ${opt:stage, 'TEST'}
   runtime: python3.8
   memorySize: 256
