@@ -15,6 +15,7 @@ provider:
     "wma:applicationId": "Aquarius TS Retriever Capture Raw Loader"
     "wma:contact": "Jim Kreft jkreft@usgs.gov"
     "wma:environment": ${self:provider.stage}
+    "wma:taggingVersion": "0.0.1"
 
 custom:
   accountNumber : ${ssm:/iow/aws/accountNumber}
