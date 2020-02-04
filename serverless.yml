@@ -1,33 +1,29 @@
 # serverless.yml
 
-service: IOW-RETRIEVER-CAPTURE
+service: aqts-retriever-capture-raw-load
 
 provider:
   name: aws
   region: 'us-west-2'
   stage: ${opt:stage, 'TEST'}
-  runtime: python3.7
+  runtime: python3.8
   memorySize: 256
   logRetentionInDays: 30
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
-    "wma:applicationId": "Retriever Capture Loader"
+    "wma:applicationId": "Aquarius TS Retriever Capture Raw Loader"
     "wma:contact": "Jim Kreft jkreft@usgs.gov"
     "wma:environment": ${self:provider.stage}
+    "wma:taggingVersion": "0.0.1"
 
 custom:
   accountNumber : ${ssm:/iow/aws/accountNumber}
   vpc:
-    securityGroupIds:
-      - ${ssm:/iow/retriever-capture/vpc/securityGroupId}
-    subnetIds:
-      - ${ssm:/iow/retriever-capture/vpc/subnetId}
+    securityGroupIds: ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupIds~split}
+    subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
   db:
-    host: ${ssm:/iow/retriever-capture/${self:provider.stage}/database/host}
-    user: capture_owner
-    password: ${ssm:/aws/reference/secretsmanager/NWISWEB-RETRIEVER-CAPTURE-POSTGRES-${self:provider.stage}~true}
-    name: "retriever_capture"
+    connectInfo: ${ssm:/aws/reference/secretsmanager/NWCAPTURE-${self:provider.stage}~true}
   environments:
     TEST: test
     QA: qa
@@ -35,45 +31,24 @@ custom:
 functions:
   iowRetrieverCapture:
     handler: src.load.lambda_handler
-    onError: arn:aws:sns:us-west-2:${self:custom.accountNumber}:IOW-RETRIEVER-CAPTURE-${self:provider.stage}
+    onError:
+      Ref: deadLetterQueue
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
-    events:
-      - s3:
-          bucket: "triggering"
-          event: s3:ObjectCreated:Put
-          rules:
-            - suffix: .json
     environment:
-      DB_HOST: ${self:custom.db.host}
-      DB_USER: ${self:custom.db.user}
-      DB_NAME: ${self:custom.db.name}
-      DB_PASSWORD: ${self:custom.db.password}
+      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
+      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
+      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
+      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
 
 resources:
   Resources:
-    S3BucketTriggering:
-      Type: AWS::S3::Bucket
+    deadLetterQueue:
+      Type: AWS::SNS::Topic
       Properties:
-        BucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
-        AccessControl: Private
-        LifecycleConfiguration:
-          Rules:
-            - ExpirationInDays: 1
-              Status: Enabled
-    IowRetrieverCaptureLambdaPermissionTriggeringS3:
-      Type: 'AWS::Lambda::Permission'
-      Properties:
-        FunctionName:
-          'Fn::GetAtt':
-            - IowRetrieverCaptureLambdaFunction
-            - Arn
-        Principal: 's3.amazonaws.com'
-        Action: 'lambda:InvokeFunction'
-        SourceAccount:
-          Ref: AWS::AccountId
-        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
+        DisplayName: aqts-retrieve-capture-raw-load-dlq-${self:custom.environments.${self:provider.stage}}
+        TopicName: aqts-retrieve-capture-raw-load-dlq-${self:custom.environments.${self:provider.stage}}
 
 plugins:
   - serverless-python-requirements

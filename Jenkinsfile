@@ -16,10 +16,7 @@ pipeline {
             }
             steps {
                 sh '''
-                ./sns.sh ${DEPLOY_STAGE}
-                ls -al
                 npm install serverless
-                ls -al
                 ./node_modules/serverless/bin/serverless plugin install -n serverless-python-requirements
                 ./node_modules/serverless/bin/serverless deploy --stage ${DEPLOY_STAGE}
                 '''
