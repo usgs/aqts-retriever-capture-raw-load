@@ -21,11 +21,11 @@ class TriggerEvent:
         self.region = region
 
     def extract(self, event):
-        for record in event['Records']:
-            record_data = CapturedData(record, self.region)
-            record_data.extract_attributes()
-            record_data.fetch_body()
-            self.data.append(record_data)
+        record = event['Record']
+        record_data = CapturedData(record, self.region)
+        record_data.extract_attributes()
+        record_data.fetch_body()
+        self.data = record_data
 
 
 class CapturedData:
