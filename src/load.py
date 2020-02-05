@@ -17,18 +17,16 @@ def etl(trigger_event):
     event.extract(trigger_event)
 
     rds = RDS()
-    record_ids = []
     try:
         rds.connect()
-        for datum in event.data:
-            logger.debug(f'Data to be persisted: {datum}.')
-            record_id = rds.persist_data(datum)
-            record_ids.append(record_id)
+        datum = event.data
+        logger.debug(f'Data to be persisted: {datum}.')
+        record_id = rds.persist_data(datum)
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
         raise e
     else:
-        return record_ids
+        return record_id
     finally:
         rds.disconnect()
         logger.debug('Disconnected from database.')
@@ -44,10 +42,10 @@ def lambda_handler(event, context):
     response = None
     try:
         logger.debug(event)
-        record_ids = etl(event)
+        record_id = etl(event)
     except Exception as e:
         logger.info(f'About to exit with this exception: {repr(e)}')
         raise e
     else:
-        response = {'ids': record_ids}
+        response = {'id': record_id}
     return response
