@@ -100,7 +100,7 @@ class RDS:
              script_name, script_pid,
              parameters, json_content)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id;"""
+            RETURNING json_data_id;"""
         values = (
             convert_total_seconds_to_datetime(datum.start_time),
             convert_total_seconds_to_datetime(datum.response_time),
