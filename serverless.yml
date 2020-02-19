@@ -16,8 +16,10 @@ provider:
     "wma:contact": "Jim Kreft jkreft@usgs.gov"
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": "0.0.1"
+    commitIdentifier: ${git:sha1}
 
 custom:
+  exportGitVariables: false
   accountNumber : ${ssm:/iow/aws/accountNumber}
   vpc:
     securityGroupIds: ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupIds~split}
@@ -47,6 +49,7 @@ resources:
         TopicName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
 
 plugins:
+  - serverless-plugin-git-variables
   - serverless-python-requirements
 
 package:
