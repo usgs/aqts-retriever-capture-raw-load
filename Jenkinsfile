@@ -20,6 +20,7 @@ pipeline {
             steps {
                 sh '''
                 npm install serverless
+                ./node_modules/serverless/bin/serverless plugin install -n serverless-plugin-git-variables
                 ./node_modules/serverless/bin/serverless plugin install -n serverless-python-requirements
                 ./node_modules/serverless/bin/serverless deploy --stage ${DEPLOY_STAGE} --region us-west-2
                 '''
