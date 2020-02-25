@@ -1,7 +1,7 @@
 boto3==1.9.249
 botocore==1.12.249
 docutils==0.15.2
-jmespath==0.9.4
+jmespath==0.9.5
 postgres==3.0.0
 psycopg2-binary==2.8.4
 psycopg2-pool==1.1
