@@ -101,18 +101,6 @@ class RDS:
              parameters, json_content)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id;"""
-        values = (
-            convert_total_seconds_to_datetime(datum.start_time),
-            convert_total_seconds_to_datetime(datum.response_time),
-            int(datum.response_code),
-            datum.url,
-            api,
-            datum.script_name,
-            int(datum.script_pid),
-            datum.parameters,
-            datum.content
-        )
-        logger.debug(f'Values: {values}')
         logger.debug('Inserting data in the database.')
         db_resp = self._execute_sql(
             insert_json_data, (

@@ -20,7 +20,6 @@ def etl(trigger_event):
     try:
         rds.connect()
         datum = event.data
-        logger.debug(f'Data to be persisted: {datum}.')
         record_id = rds.persist_data(datum)
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
