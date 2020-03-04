@@ -7,7 +7,7 @@ provider:
   region: ${opt:region, 'us-west-2'}
   stage: ${opt:stage, 'TEST'}
   runtime: python3.8
-  memorySize: 320
+  memorySize: 256
   logRetentionInDays: 30
   deploymentBucket:
     name: iow-cloud-applications
