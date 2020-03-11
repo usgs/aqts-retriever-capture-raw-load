@@ -1,6 +1,6 @@
 # serverless.yml
 
-service: aqts-retriever-capture-raw-load
+service: aqts-capture-raw-load
 
 provider:
   name: aws
@@ -27,7 +27,7 @@ custom:
   db:
     connectInfo: ${ssm:/aws/reference/secretsmanager/NWCAPTURE-DB-${self:provider.stage}~true}
 functions:
-  iowRetrieverCapture:
+  iowCapture:
     handler: src.load.lambda_handler
     onError:
       Ref: deadLetterQueue
