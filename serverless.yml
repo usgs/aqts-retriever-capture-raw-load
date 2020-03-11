@@ -29,8 +29,6 @@ custom:
 functions:
   iowCapture:
     handler: src.load.lambda_handler
-    onError:
-      Ref: deadLetterQueue
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     environment:
       DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
@@ -39,14 +37,6 @@ functions:
       DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
-
-resources:
-  Resources:
-    deadLetterQueue:
-      Type: AWS::SNS::Topic
-      Properties:
-        DisplayName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
-        TopicName: aqts-retrieve-capture-raw-load-dlq-${self:provider.stage}
 
 plugins:
   - serverless-plugin-git-variables
