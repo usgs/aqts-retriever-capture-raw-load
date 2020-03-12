@@ -41,7 +41,6 @@ class CapturedData:
         self._object_key = record['s3']['object']['key']
         logger.debug(f'Pulling data from the {self._object_key} in the {self._bucket_name} bucket.')
         self._data = json.loads(self.s3.get_file(self._bucket_name, self._object_key))
-        logger.debug(f'Data read from S3: {self._data}')
         self.metadata = self._data['metadata']
         self.content = self._data['content']
 
