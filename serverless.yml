@@ -39,6 +39,50 @@ functions:
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
 
+resources:
+  Resources:
+    snsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-${self:provider.stage}-topic
+        TopicName: ${self:service}-${self:provider.stage}-topic
+    concurrencyAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-concurrency-alarm
+        AlarmDescription: Notify when concurrency exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureLambdaFunction
+        MetricName: ConcurrentExecutions
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 150
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopic
+    errorAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-error-alarm
+        AlarmDescription: Notify when number of errors exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureLambdaFunction
+        MetricName: Errors
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopic
+
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
