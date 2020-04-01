@@ -1,4 +1,4 @@
-boto3==1.12.22
+boto3==1.12.33
 postgres==3.0.0
 psycopg2-binary==2.8.4
 psycopg2-pool==1.1
