@@ -57,7 +57,7 @@ resources:
             Value:
               Ref: IowCaptureLambdaFunction
         MetricName: ConcurrentExecutions
-        Statistic: Sum
+        Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
         Threshold: 150
         Period: 60
