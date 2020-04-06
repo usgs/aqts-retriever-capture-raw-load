@@ -17,18 +17,16 @@ def etl(trigger_event):
     event.extract(trigger_event)
 
     rds = RDS()
+    datum = event.data
     try:
-        rds.connect()
-        datum = event.data
         record_id = rds.persist_data(datum)
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
-        raise e
-    else:
-        return record_id
+        raise RuntimeError(repr(e))
     finally:
         rds.disconnect()
         logger.debug('Disconnected from database.')
+    return record_id
 
 
 def lambda_handler(event, context):
