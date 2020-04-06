@@ -37,17 +37,15 @@ class RDS:
             'password': CONFIG['rds']['password']
         }
         logger.debug("created RDS instance %s" % self.connection_parameters)
-        self.conn = None
-        self.cursor = None
+        self.conn, self.cursor = self._connect(self.connection_parameters)
 
-    def connect(self):
-        logger.debug('Connecting to database.')
-        conn_params = self.connection_parameters
-        self.conn = connect(**conn_params)
+    def _connect(self, connection_params):
+        conn = connect(**connection_params)
         logger.debug(f'Connection object: {repr(self.conn)}.')
         # Interestingly, autocommit seemed necessary for create table too.
-        self.conn.autocommit = True
-        self.cursor = self.conn.cursor()
+        conn.autocommit = True
+        cursor = self.conn.cursor()
+        return conn, cursor
 
     def disconnect(self):
         self.conn.close()

@@ -18,7 +18,6 @@ def etl(trigger_event):
 
     rds = RDS()
     try:
-        rds.connect()
         datum = event.data
         record_id = rds.persist_data(datum)
     except Exception as e:
