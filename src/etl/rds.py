@@ -26,7 +26,7 @@ def convert_total_seconds_to_datetime(total_seconds):
 
 class RDS:
 
-    def __init__(self, connect_timeout=50):
+    def __init__(self, connect_timeout=65):
         """
         connect to the database resource.
 

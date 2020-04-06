@@ -30,7 +30,7 @@ class TestRDS(TestCase):
                 database='some-database',
                 user='some-user',
                 password='some-password',
-                connect_timeout=50
+                connect_timeout=65
             )
 
 
