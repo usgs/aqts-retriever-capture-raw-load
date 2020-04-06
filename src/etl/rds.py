@@ -26,29 +26,39 @@ def convert_total_seconds_to_datetime(total_seconds):
 
 class RDS:
 
-    def __init__(self):
+    def __init__(self, connect_timeout=50):
         """
-        connect to the database resource
+        connect to the database resource.
+
+        wait for 50 seconds before giving up on getting a connection
+
         """
         self.connection_parameters = {
             'host': CONFIG['rds']['host'],
             'database': CONFIG['rds']['database'],
             'user': CONFIG['rds']['user'],
-            'password': CONFIG['rds']['password']
+            'password': CONFIG['rds']['password'],
+            'connect_timeout': connect_timeout  # keyword argument from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+
         }
         logger.debug("created RDS instance %s" % self.connection_parameters)
-        self.conn, self.cursor = self._connect(self.connection_parameters)
+        self.conn, self.cursor = self._connect()
 
-    def _connect(self, connection_params):
-        conn = connect(**connection_params)
-        logger.debug(f'Connection object: {repr(self.conn)}.')
+    def _connect(self):
+        conn = connect(**self.connection_parameters)  # should raise a OperationalError if it can't get a connection
         # Interestingly, autocommit seemed necessary for create table too.
         conn.autocommit = True
-        cursor = self.conn.cursor()
+        cursor = conn.cursor()
         return conn, cursor
 
     def disconnect(self):
-        self.conn.close()
+        try:
+            self.conn.close()
+        except AttributeError as e:
+            # Would be surprised if this ever gets thrown.
+            # An exception should be thrown well before this.
+            logger.debug(f'Error closing connection objection: {repr(e)}', exc_info=True)
+            raise RuntimeError
 
     def _execute_sql(self, sql, params=()):
         """

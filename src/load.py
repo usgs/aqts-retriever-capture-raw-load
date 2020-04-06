@@ -17,12 +17,12 @@ def etl(trigger_event):
     event.extract(trigger_event)
 
     rds = RDS()
+    datum = event.data
     try:
-        datum = event.data
         record_id = rds.persist_data(datum)
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
-        raise e
+        raise RuntimeError(repr(e))
     else:
         return record_id
     finally:
