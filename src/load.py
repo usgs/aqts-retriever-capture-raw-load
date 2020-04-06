@@ -23,11 +23,10 @@ def etl(trigger_event):
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
         raise RuntimeError(repr(e))
-    else:
-        return record_id
     finally:
         rds.disconnect()
         logger.debug('Disconnected from database.')
+    return record_id
 
 
 def lambda_handler(event, context):
