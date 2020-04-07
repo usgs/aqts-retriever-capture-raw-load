@@ -54,6 +54,7 @@ class RDS:
     def disconnect(self):
         try:
             self.conn.close()
+            logger.debug(f'Disconnected from database: {self.conn}.')
         except AttributeError as e:
             # Would be surprised if this ever gets thrown.
             # An exception should be thrown well before this.
