@@ -25,7 +25,6 @@ def etl(trigger_event):
         raise RuntimeError(repr(e))
     finally:
         rds.disconnect()
-        logger.debug('Disconnected from database.')
     return record_id
 
 
