@@ -1,8 +1,5 @@
 import boto3
 
-# project specific configuration parameters.
-from .config import CONFIG
-
 
 class S3:
 
