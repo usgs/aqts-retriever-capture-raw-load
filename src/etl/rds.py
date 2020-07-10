@@ -77,9 +77,9 @@ class RDS:
             logger.debug('Transaction will be rolled back.')
             self.conn.rollback()
         else:
-            id_of_new_record = self.cursor.fetchone()[0]
-            logger.debug(f'New record ID: {id_of_new_record}')
-            return id_of_new_record
+            id_and_partition_number = self.cursor.fetchone()
+            logger.debug(f'New record ID and partition number: {id_and_partition_number}')
+            return id_and_partition_number
 
     def persist_data(self, datum):
         """
@@ -109,7 +109,7 @@ class RDS:
              script_name, script_pid,
              parameters, json_content)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING json_data_id;"""
+            RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
         db_resp = self._execute_sql(
             insert_json_data, (
