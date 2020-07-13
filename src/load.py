@@ -43,5 +43,5 @@ def lambda_handler(event, context):
         logger.info(f'About to exit with this exception: {repr(e)}')
         raise e
     else:
-        response = {'id': record_id[0], 'partition': record_id[1]}
+        response = {'id': record_id[0], 'partitionNumber': record_id[1]}
     return response
