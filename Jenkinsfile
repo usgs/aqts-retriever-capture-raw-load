@@ -3,7 +3,7 @@
 pipeline {
     agent {
         node {
-            label 'project:any'
+            label 'team:iow'
         }
     }
     parameters {
@@ -15,7 +15,9 @@ pipeline {
     stages {
         stage('run build the zip file for lambda') {
             agent {
-                dockerfile true
+                dockerfile {
+                    label 'team:iow'
+                }
             }
             steps {
                 sh '''
