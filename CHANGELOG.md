@@ -11,5 +11,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Update Jenkinsfile pipeline for Aurora database
+- Insert uuid into the json_data table
 
 ### Fixed
