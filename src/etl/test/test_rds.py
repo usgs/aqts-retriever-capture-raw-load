@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase, mock
 
 from src.etl.rds import RDS
@@ -81,13 +82,15 @@ class RdsValidationTests(TestCase):
         with mock.patch.dict('src.etl.rds.CONFIG', self.config):
             rds = RDS()
             mock_conn.assert_called_once()
-            with self.assertRaises(ValidationException, msg="Should throw exception on a variable that is not an integer."):
+            with self.assertRaises(ValidationException,
+                                   msg="Should throw exception on a variable that is not an integer."):
                 rds.validate_int("Variable", "100.1", 100, 200)
 
     def test_validate_int_outside_range(self, mock_conn):
         rds = RDS()
         mock_conn.assert_called_once()
-        with self.assertRaises(ValidationException, msg="Should throw exception on a variable that is not an integer in range."):
+        with self.assertRaises(ValidationException,
+                               msg="Should throw exception on a variable that is not an integer in range."):
             rds.validate_int("Variable", "99", 100, 200)
 
     def test_validate_api(self, mock_conn):
@@ -117,6 +120,27 @@ class RdsValidationTests(TestCase):
             mock_conn.assert_called_once()
             with self.assertRaises(ValidationException, msg="Should throw an exception on invalid JSON."):
                 rds.validate_json("Json Var", 'not json')
+
+    def test_validate_uuid(self, mock_conn):
+        with mock.patch.dict('src.etl.rds.CONFIG', self.config):
+            rds = RDS()
+            mock_conn.assert_called_once()
+            rds.validate_uuid("0074973a-c377-472f-9f3c-f093fdc18836")
+            self.assertTrue(True, "Should not throw an exception on a valid UUID.")
+
+    def test_validate_uuid_invalid(self, mock_conn):
+        with mock.patch.dict('src.etl.rds.CONFIG', self.config):
+            rds = RDS()
+            mock_conn.assert_called_once()
+            with self.assertRaises(ValidationException, msg="Should throw an exception on invalid UUID."):
+                rds.validate_uuid("This is not a uuid")
+
+    def test_validate_uuid_missing(self, mock_conn):
+        with mock.patch.dict('src.etl.rds.CONFIG', self.config):
+            rds = RDS()
+            mock_conn.assert_called_once()
+            with self.assertRaises(ValidationException, msg="Should throw an exception on a uuid missing in the URL."):
+                rds.validate_uuid("")
 
 
 if __name__ == '__main__':

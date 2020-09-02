@@ -3,6 +3,8 @@ This module manages persisting data from a message into the RDS Resource.
 """
 
 # the postgresql connection module
+from uuid import UUID
+
 from psycopg2 import connect
 from psycopg2 import OperationalError, DataError, IntegrityError
 # json allows us to convert between dictionaries and json.
@@ -103,11 +105,14 @@ class RDS:
         self.validate_json("Parameters", datum.parameters)
         self.validate_json("JSON Data", datum.content)
 
+        # ensure that uuid is in uuid4 format
+        self.validate_uuid(datum.uuid)
+
         insert_json_data = """
             INSERT INTO capture.json_data 
             (start_time, response_time, response_code, url, api,
              script_name, script_pid,
-             parameters, json_content)
+             parameters, json_content, uuid)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
@@ -202,6 +207,13 @@ class RDS:
             json.loads(actual)
         except Exception:
             raise ValidationException("Must be JSON", variable_name, "expected valid JSON", actual)
+
+    def validate_uuid(self, actual):
+        try:
+            uuid_obj = UUID(actual, version=4)
+        except ValueError:
+            raise ValidationException("Must be UUID4", "uuid", "expected valid UUID", actual)
+
 
 
 class ValidationException(Exception):

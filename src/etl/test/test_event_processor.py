@@ -13,7 +13,7 @@ class TestCaptureData(TestCase):
         self.record = {
             's3': {
                 'bucket': {'name': 'some-s3-name'},
-                'object': {'key': 'data/blah.json'}
+                'object': {'key': 'body_getTSData_24640_mod_444abb55-afe0-40f7-9791-c824ac396a75.json'}
             }
         }
         self.region = 'us-south-1'
@@ -35,6 +35,15 @@ class TestCaptureData(TestCase):
         m_method.return_value = json.dumps(fake_data)
         message = CapturedData(self.record, self.region).extract_attributes()
         self.assertEqual(the_value, message.url)
+
+
+    @mock.patch.object(S3, 'get_file')
+    def test_attribute_uuid(self, m_method, _):
+        the_value = "444abb55-afe0-40f7-9791-c824ac396a75"
+        fake_data = {'content': 'this is the body', 'metadata': {'URL': {sqs.STRING_VALUE: the_value}}}
+        m_method.return_value = json.dumps(fake_data)
+        message = CapturedData(self.record, self.region).extract_attributes()
+        self.assertEqual(the_value, message.uuid)
 
 
 @mock.patch('src.etl.s3.boto3.client')
@@ -71,7 +80,7 @@ class TestTriggerEvent(TestCase):
                       "arn": "arn:aws:s3:::example-bucket"
                     },
                     "object": {
-                      "key": "test/key",
+                      "key": "body_getTSData_24640_mod_444abb55-afe0-40f7-9791-c824ac396a75.json",
                       "size": 1024,
                       "eTag": "0123456789abcdef0123456789abcdef",
                       "sequencer": "0A1B2C3D4E5F678901"
