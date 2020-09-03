@@ -124,6 +124,14 @@ class RDS:
                 datum.parameters, datum.content
             )
         )
+
+        # TBD IOW-561 will import S3 objects directly into RDS.  All of them? Or only the big ones?
+        # For now, ignore the returned db_resp from the insert statement and look up the values
+        # from the uuid
+
+        select_json_data_id_and_partition = """
+            SELECT json_data_id, partition from capture.json_data where uuid = %s"""
+        db_resp = self._execute_sql(select_json_data_id_and_partition, datum.uuid)
         return db_resp
 
     @classmethod
