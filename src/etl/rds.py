@@ -121,7 +121,7 @@ class RDS:
                 convert_total_seconds_to_datetime(datum.start_time),
                 convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
                 datum.url, api, datum.script_name, int(datum.script_pid),
-                datum.parameters, datum.content
+                datum.parameters, datum.content, datum.uuid
             )
         )
 
