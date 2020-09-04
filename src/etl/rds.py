@@ -132,7 +132,7 @@ class RDS:
         # from the uuid
 
         select_json_data_id_and_partition = """
-            SELECT json_data_id, partition from capture.json_data where uuid = %s"""
+            SELECT json_data_id, partition_number from capture.json_data where uuid = %s"""
         db_resp = self._execute_sql(select_json_data_id_and_partition, (datum.uuid,))
         return db_resp
 
