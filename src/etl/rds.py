@@ -117,7 +117,6 @@ class RDS:
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
-        logger.debug(f'Checking uuid again {datum.uuid} is string? {isinstance(datum.uuid, str)}')
         db_resp = self._execute_sql(
             insert_json_data, (
                 convert_total_seconds_to_datetime(datum.start_time),
