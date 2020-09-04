@@ -128,6 +128,7 @@ class RdsValidationTests(TestCase):
             rds.validate_uuid("0074973a-c377-472f-9f3c-f093fdc18836")
             self.assertTrue(True, "Should not throw an exception on a valid UUID.")
 
+
     def test_validate_uuid_invalid(self, mock_conn):
         with mock.patch.dict('src.etl.rds.CONFIG', self.config):
             rds = RDS()

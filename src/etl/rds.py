@@ -69,7 +69,7 @@ class RDS:
         shared method to connect and run an SQL statement.
         note that this is not efficient for most uses but this script has limited statements
         """
-        logger.debug(f'SQL: {self.cursor.mogrify(sql, params)}.')
+        # logger.debug(f'SQL: {self.cursor.mogrify(sql, params)}.')
         try:
             if len(params):
                 self.cursor.execute(sql, params)
@@ -220,7 +220,7 @@ class RDS:
 
     def validate_uuid(self, actual):
         try:
-            uuid_obj = UUID(actual, version=4)
+            UUID(actual, version=4)
         except ValueError:
             raise ValidationException("Must be UUID4", "uuid", "expected valid UUID", actual)
 
