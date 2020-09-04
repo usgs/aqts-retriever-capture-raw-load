@@ -45,6 +45,7 @@ class CapturedData:
         self.content = self._data['content']
         proto_uuid = self._object_key.replace(".json", "")
         self.uuid = proto_uuid[-36:]
+        logger.debug(f'Obtained uuid of {self.uuid} and is it a string? {isinstance(self.uuid, str)}')
 
     def fetch_body(self):
         self.put(BODY, self.content)

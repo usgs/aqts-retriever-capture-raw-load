@@ -43,6 +43,7 @@ class TestCaptureData(TestCase):
         m_method.return_value = json.dumps(fake_data)
         message = CapturedData(self.record, self.region).extract_attributes()
         self.assertEqual(the_value, message.uuid)
+        self.assertTrue(isinstance(message.uuid, str))
 
 
 @mock.patch('src.etl.s3.boto3.client')

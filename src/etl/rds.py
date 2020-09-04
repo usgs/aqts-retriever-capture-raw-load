@@ -40,7 +40,8 @@ class RDS:
             'database': CONFIG['rds']['database'],
             'user': CONFIG['rds']['user'],
             'password': CONFIG['rds']['password'],
-            'connect_timeout': connect_timeout  # keyword argument from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+            'connect_timeout': connect_timeout
+            # keyword argument from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 
         }
         logger.debug("created RDS instance %s" % self.connection_parameters)
@@ -110,17 +111,18 @@ class RDS:
 
         insert_json_data = """
             INSERT INTO capture.json_data 
-            (start_time, response_time, response_code, url, api,
-             script_name, script_pid,
+            (start_time, response_time, 
+             response_code, url, api, script_name, script_pid,
              parameters, json_content, uuid)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
+        logger.debug(f'Checking uuid again {datum.uuid} is string? {isinstance(datum.uuid, str)}')
         db_resp = self._execute_sql(
             insert_json_data, (
                 convert_total_seconds_to_datetime(datum.start_time),
-                convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
-                datum.url, api, datum.script_name, int(datum.script_pid),
+                convert_total_seconds_to_datetime(datum.response_time),
+                int(datum.response_code), datum.url, api, datum.script_name, int(datum.script_pid),
                 datum.parameters, datum.content, datum.uuid
             )
         )
@@ -223,12 +225,11 @@ class RDS:
             raise ValidationException("Must be UUID4", "uuid", "expected valid UUID", actual)
 
 
-
 class ValidationException(Exception):
     """
     Validation Exception class
     """
-    
+
     def __init__(self, message, variable_name, expected, actual):
         """
         creates an instance
@@ -237,10 +238,10 @@ class ValidationException(Exception):
         self.variable_name = variable_name
         self.expected = expected
         self.actual = actual
-    
+
     def message(self):
         """
         create an error message string from the properties
         """
         return "%s. %s should be '%s' but was '%s'" \
-            % (self.message, self.variable_name, self.expected, self.actual)
+               % (self.message, self.variable_name, self.expected, self.actual)
