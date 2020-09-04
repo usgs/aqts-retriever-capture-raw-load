@@ -113,7 +113,7 @@ class RDS:
             (start_time, response_time, response_code, url, api,
              script_name, script_pid,
              parameters, json_content, uuid)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
         db_resp = self._execute_sql(
