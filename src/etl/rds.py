@@ -3,6 +3,8 @@ This module manages persisting data from a message into the RDS Resource.
 """
 
 # the postgresql connection module
+from uuid import UUID
+
 from psycopg2 import connect
 from psycopg2 import OperationalError, DataError, IntegrityError
 # json allows us to convert between dictionaries and json.
@@ -38,7 +40,8 @@ class RDS:
             'database': CONFIG['rds']['database'],
             'user': CONFIG['rds']['user'],
             'password': CONFIG['rds']['password'],
-            'connect_timeout': connect_timeout  # keyword argument from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+            'connect_timeout': connect_timeout
+            # keyword argument from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 
         }
         logger.debug("created RDS instance %s" % self.connection_parameters)
@@ -103,22 +106,33 @@ class RDS:
         self.validate_json("Parameters", datum.parameters)
         self.validate_json("JSON Data", datum.content)
 
+        # ensure that uuid is in uuid4 format
+        self.validate_uuid(datum.uuid)
+
         insert_json_data = """
             INSERT INTO capture.json_data 
-            (start_time, response_time, response_code, url, api,
-             script_name, script_pid,
-             parameters, json_content)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (start_time, response_time, 
+             response_code, url, api, script_name, script_pid,
+             parameters, json_content, uuid)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
         db_resp = self._execute_sql(
             insert_json_data, (
                 convert_total_seconds_to_datetime(datum.start_time),
-                convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
-                datum.url, api, datum.script_name, int(datum.script_pid),
-                datum.parameters, datum.content
+                convert_total_seconds_to_datetime(datum.response_time),
+                int(datum.response_code), datum.url, api, datum.script_name, int(datum.script_pid),
+                datum.parameters, datum.content, datum.uuid
             )
         )
+
+        # TBD IOW-561 will import S3 objects directly into RDS.  All of them? Or only the big ones?
+        # For now, ignore the returned db_resp from the insert statement and look up the values
+        # from the uuid
+
+        select_json_data_id_and_partition = """
+            SELECT json_data_id, partition_number from capture.json_data where uuid = %s"""
+        db_resp = self._execute_sql(select_json_data_id_and_partition, (datum.uuid,))
         return db_resp
 
     @classmethod
@@ -203,12 +217,18 @@ class RDS:
         except Exception:
             raise ValidationException("Must be JSON", variable_name, "expected valid JSON", actual)
 
+    def validate_uuid(self, actual):
+        try:
+            UUID(actual, version=4)
+        except ValueError:
+            raise ValidationException("Must be UUID4", "uuid", "expected valid UUID", actual)
+
 
 class ValidationException(Exception):
     """
     Validation Exception class
     """
-    
+
     def __init__(self, message, variable_name, expected, actual):
         """
         creates an instance
@@ -217,10 +237,10 @@ class ValidationException(Exception):
         self.variable_name = variable_name
         self.expected = expected
         self.actual = actual
-    
+
     def message(self):
         """
         create an error message string from the properties
         """
         return "%s. %s should be '%s' but was '%s'" \
-            % (self.message, self.variable_name, self.expected, self.actual)
+               % (self.message, self.variable_name, self.expected, self.actual)
