@@ -69,7 +69,7 @@ class RDS:
         shared method to connect and run an SQL statement.
         note that this is not efficient for most uses but this script has limited statements
         """
-        # logger.debug(f'SQL: {self.cursor.mogrify(sql, params)}.')
+        logger.debug(f'SQL: {self.cursor.mogrify(sql, params)}.')
         try:
             if len(params):
                 self.cursor.execute(sql, params)
@@ -133,7 +133,7 @@ class RDS:
 
         select_json_data_id_and_partition = """
             SELECT json_data_id, partition from capture.json_data where uuid = %s"""
-        db_resp = self._execute_sql(select_json_data_id_and_partition, datum.uuid)
+        db_resp = self._execute_sql(select_json_data_id_and_partition, (datum.uuid,))
         return db_resp
 
     @classmethod
