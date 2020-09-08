@@ -2,6 +2,7 @@
 ETL loads content S3 and persist it into an RDS
 """
 import logging
+import os
 
 from .etl.event_processor import TriggerEvent
 from .etl.rds import RDS
@@ -28,6 +29,16 @@ def etl(trigger_event):
     return record_id
 
 
+def etl_big(trigger_event):
+    rds = RDS()
+    try:
+        record_id = rds.insert_from_s3(trigger_event['s3']['object']['key'])
+    except Exception as e:
+        logger.debug(repr(e), exc_info=True)
+        raise RuntimeError(repr(e))
+    return record_id
+
+
 def lambda_handler(event, context):
     """
     takes an AWS S3 event and processes it
@@ -38,7 +49,13 @@ def lambda_handler(event, context):
     response = None
     try:
         logger.debug(event)
-        record_id = etl(event)
+        size = event['s3']['object']['size']
+        if size < os.getenv('S3_OBJECT_SIZE_LIMIT'):
+            logger.debug(f"Processing small S3 object {size}")
+            record_id = etl(event)
+        else:
+            logger.debug(f"Processing large S3 object {size}")
+            record_id = etl_big(event)
     except Exception as e:
         logger.info(f'About to exit with this exception: {repr(e)}')
         raise e

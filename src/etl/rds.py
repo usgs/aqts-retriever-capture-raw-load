@@ -3,6 +3,7 @@ This module manages persisting data from a message into the RDS Resource.
 """
 
 # the postgresql connection module
+import os
 from uuid import UUID
 
 from psycopg2 import connect
@@ -84,6 +85,30 @@ class RDS:
             logger.debug(f'New record ID and partition number: {id_and_partition_number}')
             return id_and_partition_number
 
+    def get_id_and_partition(self, my_uuid):
+        select_json_data_id_and_partition = """
+            SELECT json_data_id, partition_number from capture.json_data where uuid = %s"""
+        db_resp = self._execute_sql(select_json_data_id_and_partition, (my_uuid,))
+        return db_resp
+
+    def insert_from_s3(self, object_key):
+        insert_json_data = """ 
+        select
+        aws_s3.table_import_from_s3(
+            'capture.json_data',
+            'start_time,response_time,response_code,url,api,script_name,script_pid,parameters,json_content,uuid',
+            'DELIMITER ''|''',
+            aws_commons.create_s3_uri(%s, %s,'us-west-2')
+        );"""
+
+        self._execute_sql(
+            insert_json_data, (
+                os.getenv('BUCKET_NAME'), object_key
+            )
+        )
+        my_uuid = object_key.replace(".json", "")[-36:]
+        return self.get_id_and_partition(my_uuid)
+
     def persist_data(self, datum):
         """
         validates each value and 
@@ -125,15 +150,7 @@ class RDS:
                 datum.parameters, datum.content, datum.uuid
             )
         )
-
-        # TBD IOW-561 will import S3 objects directly into RDS.  All of them? Or only the big ones?
-        # For now, ignore the returned db_resp from the insert statement and look up the values
-        # from the uuid
-
-        select_json_data_id_and_partition = """
-            SELECT json_data_id, partition_number from capture.json_data where uuid = %s"""
-        db_resp = self._execute_sql(select_json_data_id_and_partition, (datum.uuid,))
-        return db_resp
+        return self.get_id_and_partition(datum.uuid)
 
     @classmethod
     def validate_contains(cls, variable_name, actual):
