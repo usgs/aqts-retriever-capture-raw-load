@@ -22,6 +22,10 @@ provider:
 custom:
   exportGitVariables: false
   accountNumber : ${ssm:/iow/aws/accountNumber}
+  environments:
+    TEST: test
+    QA: qa
+    PROD-EXTERNAL: prod-external
   vpc:
     securityGroupIds: ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupIds~split}
     subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
