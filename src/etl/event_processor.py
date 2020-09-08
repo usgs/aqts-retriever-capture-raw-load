@@ -45,7 +45,6 @@ class CapturedData:
         self.content = self._data['content']
         self.uuid = self._object_key.replace(".json", "")[-36:]
 
-
     def fetch_body(self):
         self.put(BODY, self.content)
 
