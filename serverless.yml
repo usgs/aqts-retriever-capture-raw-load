@@ -22,6 +22,10 @@ provider:
 custom:
   exportGitVariables: false
   accountNumber : ${ssm:/iow/aws/accountNumber}
+  environments:
+    TEST: test
+    QA: qa
+    PROD-EXTERNAL: prod-external
   vpc:
     securityGroupIds: ${ssm:/iow/retriever-capture/${self:provider.stage}/securityGroupIds~split}
     subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
@@ -37,6 +41,7 @@ functions:
       DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
       DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
+      S3_OBJECT_SIZE_LIMIT: 150000000
     vpc: ${self:custom.vpc}
 
 resources:

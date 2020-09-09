@@ -43,8 +43,7 @@ class CapturedData:
         self._data = json.loads(self.s3.get_file(self._bucket_name, self._object_key))
         self.metadata = self._data['metadata']
         self.content = self._data['content']
-        proto_uuid = self._object_key.replace(".json", "")
-        self.uuid = proto_uuid[-36:]
+        self.uuid = self._object_key.replace(".json", "")[-36:]
 
     def fetch_body(self):
         self.put(BODY, self.content)
