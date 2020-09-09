@@ -41,7 +41,6 @@ functions:
       DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
       DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
-      BUCKET_NAME: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
       S3_OBJECT_SIZE_LIMIT: 150000000
     vpc: ${self:custom.vpc}
 

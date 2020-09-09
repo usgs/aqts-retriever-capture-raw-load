@@ -91,7 +91,7 @@ class RDS:
         db_resp = self._execute_sql(select_json_data_id_and_partition, (my_uuid,))
         return db_resp
 
-    def insert_from_s3(self, object_key):
+    def insert_from_s3(self, bucket_name, object_key):
         insert_json_data = """ 
         select
         aws_s3.table_import_from_s3(
@@ -103,7 +103,7 @@ class RDS:
 
         self._execute_sql(
             insert_json_data, (
-                os.getenv('BUCKET_NAME'), object_key
+                bucket_name, object_key
             )
         )
         my_uuid = object_key.replace(".json", "")[-36:]
