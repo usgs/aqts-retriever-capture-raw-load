@@ -49,8 +49,8 @@ def lambda_handler(event, context):
     response = None
     try:
         logger.debug(event)
-        size = event['s3']['object']['size']
-        if size < os.getenv('S3_OBJECT_SIZE_LIMIT'):
+        size = int(event['Record']['s3']['object']['size'])
+        if size < int(os.getenv('S3_OBJECT_SIZE_LIMIT', 150000000)):
             logger.debug(f"Processing small S3 object {size}")
             record_id = etl(event)
         else:
