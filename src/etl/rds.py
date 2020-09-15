@@ -160,7 +160,7 @@ class RDS:
         query = """
             create extension if not exists aws_s3 cascade;"""
         logger.debug('Creating aws_s3 extension if it does not exist.')
-        db_resp = self._execute_sql(query)
+        self.cursor.execute(query)
 
     @classmethod
     def validate_contains(cls, variable_name, actual):
