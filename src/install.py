@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def aws_s3(trigger_event):
+def aws_s3():
     rds = RDS()
     try:
         rds.install_aws_s3()

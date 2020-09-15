@@ -48,7 +48,7 @@ functions:
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     events:
       - schedule:
-          rate: rate(15 minutes)
+          rate: rate(5 minutes)
           enabled: true
     environment:
       DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
