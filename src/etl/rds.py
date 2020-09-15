@@ -152,6 +152,16 @@ class RDS:
         )
         return self.get_id_and_partition(datum.uuid)
 
+    def install_aws_s3(self):
+        """
+        installs the aws_s3 extension if it hasn't been installed
+        """
+
+        query = """
+            create extension if not exists aws_s3 cascade;"""
+        logger.debug('Creating aws_s3 extension if it does not exist.')
+        db_resp = self._execute_sql(query)
+
     @classmethod
     def validate_contains(cls, variable_name, actual):
         """
