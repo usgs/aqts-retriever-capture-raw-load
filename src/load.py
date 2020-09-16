@@ -29,10 +29,11 @@ def etl(trigger_event):
     return record_id
 
 
-def etl_big(trigger_event):
+def etl_big(event):
     rds = RDS()
+    record = event['Record']
     try:
-        record_id = rds.insert_from_s3(trigger_event['s3']['bucket']['name'], trigger_event['s3']['object']['key'])
+        record_id = rds.insert_from_s3(record['s3']['bucket']['name'], record['s3']['object']['key'])
     except Exception as e:
         logger.debug(repr(e), exc_info=True)
         raise RuntimeError(repr(e))
