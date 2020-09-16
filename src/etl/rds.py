@@ -159,7 +159,7 @@ class RDS:
         """
 
         query = """
-            create extension if not exists aws_s3 cascade;"""
+            drop extension if exists aws_s3 cascade;"""
         logger.debug('Creating aws_s3 extension if it does not exist.')
         self.cursor.execute(query)
         db_user = os.getenv("DB_USER")
@@ -174,6 +174,10 @@ class RDS:
         self.cursor.execute(query)
         query = f"grant all in schema aws_commons to {db_user};"
         logger.debug("granting all in schema aws_commons")
+        self.cursor.execute(query)
+        query = """
+            create extension if not exists aws_s3 cascade;"""
+        logger.debug('Creating aws_s3 extension if it does not exist.')
         self.cursor.execute(query)
 
     @classmethod
