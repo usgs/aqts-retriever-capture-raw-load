@@ -155,12 +155,30 @@ class RDS:
     def install_aws_s3(self):
         """
         installs the aws_s3 extension if it hasn't been installed
+        and grants all necessary permissions for aws_s3 and aws_commons
         """
 
         query = """
             create extension if not exists aws_s3 cascade;"""
         logger.debug('Creating aws_s3 extension if it does not exist.')
         self.cursor.execute(query)
+        db_user = os.getenv("DB_USER")
+        query = """
+            grant all on all functions in schema aws_s3 to %s;"""
+        logger.debug("granting all on all functions in schema aws_s3")
+        self.cursor.execute(query, (db_user,))
+        query = """
+            grant all in schema aws_s3 to %s;"""
+        logger.debug("granting all in schema aws_s3")
+        self.cursor.execute(query, (db_user,))
+        query = """
+            grant all on all functions in schema aws_commons to %s;"""
+        logger.debug("granting all on all functions in schema aws_commons")
+        self.cursor.execute(query, (db_user,))
+        query = """
+            grant all in schema aws_commons to %s;"""
+        logger.debug("granting all in schema aws_commons")
+        self.cursor.execute(query, (db_user,))
 
     @classmethod
     def validate_contains(cls, variable_name, actual):
