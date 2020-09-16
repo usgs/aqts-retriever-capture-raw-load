@@ -163,22 +163,18 @@ class RDS:
         logger.debug('Creating aws_s3 extension if it does not exist.')
         self.cursor.execute(query)
         db_user = os.getenv("DB_USER")
-        query = """
-            grant all on all functions in schema aws_s3 to %s;"""
+        query = f"grant all on all functions in schema aws_s3 to {db_user};"
         logger.debug("granting all on all functions in schema aws_s3")
-        self.cursor.execute(query, (db_user,))
-        query = """
-            grant all in schema aws_s3 to %s;"""
+        self.cursor.execute(query)
+        query = f"grant all in schema aws_s3 to {db_user};"
         logger.debug("granting all in schema aws_s3")
-        self.cursor.execute(query, (db_user,))
-        query = """
-            grant all on all functions in schema aws_commons to %s;"""
+        self.cursor.execute(query)
+        query = f"grant all on all functions in schema aws_commons to {db_user};"
         logger.debug("granting all on all functions in schema aws_commons")
-        self.cursor.execute(query, (db_user,))
-        query = """
-            grant all in schema aws_commons to %s;"""
+        self.cursor.execute(query)
+        query = f"grant all in schema aws_commons to {db_user};"
         logger.debug("granting all in schema aws_commons")
-        self.cursor.execute(query, (db_user,))
+        self.cursor.execute(query)
 
     @classmethod
     def validate_contains(cls, variable_name, actual):
