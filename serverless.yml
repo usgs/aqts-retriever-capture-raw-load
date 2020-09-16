@@ -43,6 +43,21 @@ functions:
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       S3_OBJECT_SIZE_LIMIT: 150000000
     vpc: ${self:custom.vpc}
+  awsS3ExtensionInstall:
+    handler: src.install.lambda_handler
+    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    events:
+      - schedule:
+          rate: cron(0 8 1 * ? *)
+          enabled: true
+    environment:
+      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
+      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
+      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
+      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
+      AWS_DEPLOYMENT_REGION: ${self:provider.region}
+    vpc: ${self:custom.vpc}
+
 
 resources:
   Resources:
