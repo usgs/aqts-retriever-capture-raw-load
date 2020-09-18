@@ -8,7 +8,7 @@ provider:
   stage: ${opt:stage, 'TEST'}
   runtime: python3.8
   memorySize: 1536
-  timeout: 70
+  timeout: 900
   logRetentionInDays: 90
   deploymentBucket:
     name: iow-cloud-applications
