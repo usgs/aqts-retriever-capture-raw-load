@@ -42,6 +42,8 @@ def lambda_handler(event, context):
         size = int(event['Record']['s3']['object']['size'])
         if size < int(os.getenv('S3_OBJECT_SIZE_LIMIT', 150000000)):
             record_id = etl(event)
+        else:
+            raise Exception(f"File too large to process for event {event}")
     except Exception as e:
         logger.info(f'About to exit with this exception: {repr(e)}')
         raise e
