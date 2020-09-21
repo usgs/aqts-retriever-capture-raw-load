@@ -11,6 +11,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Update Jenkinsfile pipeline for Aurora database
-- Add support for processing large S3 objects
 
 ### Fixed

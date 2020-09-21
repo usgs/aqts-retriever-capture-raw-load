@@ -3,9 +3,6 @@ This module manages persisting data from a message into the RDS Resource.
 """
 
 # the postgresql connection module
-import os
-from uuid import UUID
-
 from psycopg2 import connect
 from psycopg2 import OperationalError, DataError, IntegrityError
 # json allows us to convert between dictionaries and json.
@@ -85,33 +82,9 @@ class RDS:
             logger.debug(f'New record ID and partition number: {id_and_partition_number}')
             return id_and_partition_number
 
-    def get_id_and_partition(self, my_uuid):
-        select_json_data_id_and_partition = """
-            SELECT json_data_id, partition_number from capture.json_data where uuid = %s"""
-        db_resp = self._execute_sql(select_json_data_id_and_partition, (my_uuid,))
-        return db_resp
-
-    def insert_from_s3(self, bucket_name, object_key):
-        insert_json_data = """ 
-        select
-        aws_s3.table_import_from_s3(
-            'capture.json_data',
-            'start_time,response_time,response_code,url,api,script_name,script_pid,parameters,json_content,uuid',
-            'DELIMITER ''|''',
-            aws_commons.create_s3_uri(%s, %s,'us-west-2')
-        );"""
-
-        self._execute_sql(
-            insert_json_data, (
-                bucket_name, object_key
-            )
-        )
-        my_uuid = object_key.replace(".json", "")[-36:]
-        return self.get_id_and_partition(my_uuid)
-
     def persist_data(self, datum):
         """
-        validates each value and 
+        validates each value and
         persists the message to RDS.
         """
         # ensure time is well formatted
@@ -131,36 +104,23 @@ class RDS:
         self.validate_json("Parameters", datum.parameters)
         self.validate_json("JSON Data", datum.content)
 
-        # ensure that uuid is in uuid4 format
-        self.validate_uuid(datum.uuid)
-
         insert_json_data = """
             INSERT INTO capture.json_data 
-            (start_time, response_time, 
-             response_code, url, api, script_name, script_pid,
-             parameters, json_content, uuid)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (start_time, response_time, response_code, url, api,
+             script_name, script_pid,
+             parameters, json_content)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING json_data_id, partition_number;"""
         logger.debug('Inserting data in the database.')
         db_resp = self._execute_sql(
             insert_json_data, (
                 convert_total_seconds_to_datetime(datum.start_time),
-                convert_total_seconds_to_datetime(datum.response_time),
-                int(datum.response_code), datum.url, api, datum.script_name, int(datum.script_pid),
-                datum.parameters, datum.content, datum.uuid
+                convert_total_seconds_to_datetime(datum.response_time), int(datum.response_code),
+                datum.url, api, datum.script_name, int(datum.script_pid),
+                datum.parameters, datum.content
             )
         )
-        return self.get_id_and_partition(datum.uuid)
-
-    def install_aws_s3(self):
-        """
-        installs the aws_s3 extension if it hasn't been installed
-        """
-
-        query = """
-            create extension if not exists aws_s3 cascade;"""
-        logger.debug('Creating aws_s3 extension if it does not exist.')
-        self.cursor.execute(query)
+        return db_resp
 
     @classmethod
     def validate_contains(cls, variable_name, actual):
@@ -243,12 +203,6 @@ class RDS:
             json.loads(actual)
         except Exception:
             raise ValidationException("Must be JSON", variable_name, "expected valid JSON", actual)
-
-    def validate_uuid(self, actual):
-        try:
-            UUID(actual, version=4)
-        except ValueError:
-            raise ValidationException("Must be UUID4", "uuid", "expected valid UUID", actual)
 
 
 class ValidationException(Exception):

@@ -29,17 +29,6 @@ def etl(trigger_event):
     return record_id
 
 
-def etl_big(event):
-    rds = RDS()
-    record = event['Record']
-    try:
-        record_id = rds.insert_from_s3(record['s3']['bucket']['name'], record['s3']['object']['key'])
-    except Exception as e:
-        logger.debug(repr(e), exc_info=True)
-        raise RuntimeError(repr(e))
-    return record_id
-
-
 def lambda_handler(event, context):
     """
     takes an AWS S3 event and processes it
@@ -52,14 +41,12 @@ def lambda_handler(event, context):
         logger.debug(event)
         size = int(event['Record']['s3']['object']['size'])
         if size < int(os.getenv('S3_OBJECT_SIZE_LIMIT', 150000000)):
-            logger.debug(f"Processing small S3 object {size}")
             record_id = etl(event)
         else:
-            logger.debug(f"Processing large S3 object {size}")
-            record_id = etl_big(event)
+            raise Exception(f"File too large to process for event {event}")
     except Exception as e:
         logger.info(f'About to exit with this exception: {repr(e)}')
         raise e
     else:
-        response = {'id': record_id[0], 'partitionNumber': record_id[1]}
+        response = {'id': record_id[0], 'partition': record_id[1]}
     return response
