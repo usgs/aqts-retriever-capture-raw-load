@@ -74,7 +74,7 @@ resources:
         MetricName: ConcurrentExecutions
         Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 48
+        Threshold: 50
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
@@ -116,7 +116,7 @@ resources:
         MetricName: ConcurrentExecutions
         Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 4
+        Threshold: 5
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
