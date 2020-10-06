@@ -101,8 +101,8 @@ resources:
     snsTopicMedium:
       Type: AWS::SNS::Topic
       Properties:
-        DisplayName: ${self:service}-${self:provider.stage}-topic
-        TopicName: ${self:service}-${self:provider.stage}-topic
+        DisplayName: ${self:service}-medium-${self:provider.stage}-topic
+        TopicName: ${self:service}-medium-${self:provider.stage}-topic
     concurrencyAlarmMedium:
       Type: AWS::CloudWatch::Alarm
       Properties:
