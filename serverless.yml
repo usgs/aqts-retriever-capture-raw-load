@@ -12,11 +12,11 @@ provider:
   role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
   vpc: ${self:custom.vpc}
   environment:
-      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
-      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
-      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
-      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
-      AWS_DEPLOYMENT_REGION: ${self:provider.region}
+    DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
+    DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
+    DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
+    DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
+    AWS_DEPLOYMENT_REGION: ${self:provider.region}
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
@@ -45,7 +45,7 @@ functions:
     memorySize: 512
     reservedConcurrency: 50
     environment:
-      S3_OBJECT_SIZE_LIMIT: 500
+      S3_OBJECT_SIZE_LIMIT: 50000
 
   iowCaptureMedium:
     handler: src.load.lambda_handler
