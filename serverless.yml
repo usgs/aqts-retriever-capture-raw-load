@@ -9,6 +9,14 @@ provider:
   runtime: python3.8
   timeout: 70
   logRetentionInDays: 90
+  role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+  vpc: ${self:custom.vpc}
+  environment:
+      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
+      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
+      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
+      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
+      AWS_DEPLOYMENT_REGION: ${self:provider.region}
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
@@ -36,29 +44,15 @@ functions:
     handler: src.load.lambda_handler
     memorySize: 512
     reservedConcurrency: 50
-    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     environment:
-      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
-      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
-      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
-      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
-      AWS_DEPLOYMENT_REGION: ${self:provider.region}
       S3_OBJECT_SIZE_LIMIT: 500
-    vpc: ${self:custom.vpc}
 
   iowCaptureMedium:
     handler: src.load.lambda_handler
     memorySize: 1536
     reservedConcurrency: 5
-    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     environment:
-      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
-      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
-      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
-      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
-      AWS_DEPLOYMENT_REGION: ${self:provider.region}
       S3_OBJECT_SIZE_LIMIT: 150000000
-    vpc: ${self:custom.vpc}
 
 resources:
   Resources:
