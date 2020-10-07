@@ -26,7 +26,7 @@ def convert_total_seconds_to_datetime(total_seconds):
 
 class RDS:
 
-    def __init__(self, connect_timeout=65):
+    def __init__(self, db_host, db_user, db_name, db_password, connect_timeout=65):
         """
         connect to the database resource.
 
@@ -34,10 +34,10 @@ class RDS:
 
         """
         self.connection_parameters = {
-            'host': CONFIG['rds']['host'],
-            'database': CONFIG['rds']['database'],
-            'user': CONFIG['rds']['user'],
-            'password': CONFIG['rds']['password'],
+            'host': db_host,
+            'database': db_name,
+            'user': db_user,
+            'password': db_password,
             'connect_timeout': connect_timeout
             # keyword argument from https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
 

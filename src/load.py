@@ -1,23 +1,37 @@
 """
 ETL loads content S3 and persist it into an RDS
 """
+import json
 import logging
 import os
+
+import boto3
 
 from .etl.event_processor import TriggerEvent
 from .etl.rds import RDS
 from .etl.config import CONFIG
 
+log_level = os.getenv('LOG_LEVEL', logging.ERROR)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
+NWCAPTURE_TEST = 'NWCAPTURE-DB-TEST'
+secrets_client = boto3.client('secretsmanager', os.environ['AWS_DEPLOYMENT_REGION'])
 
 def etl(trigger_event):
     aws_region = CONFIG['aws']['region']
     event = TriggerEvent(aws_region)
     event.extract(trigger_event)
+    original = secrets_client.get_secret_value(
+        SecretId=NWCAPTURE_TEST,
+    )
+    secret_string = json.loads(original['SecretString'])
+    db_host = secret_string['DATABASE_ADDRESS']
+    db_user = secret_string['SCHEMA_OWNER_USERNAME']
+    db_name = secret_string['DATABASE_NAME']
+    db_password = secret_string['SCHEMA_OWNER_PASSWORD']
 
-    rds = RDS()
+    rds = RDS(db_host, db_user, db_name, db_password)
     datum = event.data
     try:
         record_id = rds.persist_data(datum)
