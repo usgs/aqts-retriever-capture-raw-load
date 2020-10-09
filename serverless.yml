@@ -45,7 +45,7 @@ functions:
     memorySize: 512
     reservedConcurrency: 50
     environment:
-      S3_OBJECT_SIZE_LIMIT: 50000
+      S3_OBJECT_SIZE_LIMIT: 51200000
 
   iowCaptureMedium:
     handler: src.load.lambda_handler
