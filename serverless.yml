@@ -7,9 +7,16 @@ provider:
   region: ${opt:region, 'us-west-2'}
   stage: ${opt:stage, 'TEST'}
   runtime: python3.8
-  memorySize: 1536
   timeout: 70
   logRetentionInDays: 90
+  role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+  vpc: ${self:custom.vpc}
+  environment:
+    DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
+    DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
+    DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
+    DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
+    AWS_DEPLOYMENT_REGION: ${self:provider.region}
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
@@ -32,18 +39,21 @@ custom:
     subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
   db:
     connectInfo: ${ssm:/aws/reference/secretsmanager/NWCAPTURE-DB-${self:provider.stage}~true}
+
 functions:
   iowCapture:
     handler: src.load.lambda_handler
-    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    memorySize: 512
+    reservedConcurrency: 50
     environment:
-      DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
-      DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
-      DB_NAME: ${self:custom.db.connectInfo.DATABASE_NAME}
-      DB_PASSWORD: ${self:custom.db.connectInfo.SCHEMA_OWNER_PASSWORD}
-      AWS_DEPLOYMENT_REGION: ${self:provider.region}
+      S3_OBJECT_SIZE_LIMIT: 51200000
+
+  iowCaptureMedium:
+    handler: src.load.lambda_handler
+    memorySize: 1536
+    reservedConcurrency: 5
+    environment:
       S3_OBJECT_SIZE_LIMIT: 150000000
-    vpc: ${self:custom.vpc}
 
 resources:
   Resources:
@@ -65,7 +75,7 @@ resources:
         MetricName: ConcurrentExecutions
         Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 150
+        Threshold: 50
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
@@ -88,6 +98,48 @@ resources:
         EvaluationPeriods: 1
         AlarmActions:
           - Ref: snsTopic
+
+    snsTopicMedium:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-medium-${self:provider.stage}-topic
+        TopicName: ${self:service}-medium-${self:provider.stage}-topic
+    concurrencyAlarmMedium:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-medium-${self:provider.stage}-concurrency-alarm
+        AlarmDescription: Notify when concurrency exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureMediumLambdaFunction
+        MetricName: ConcurrentExecutions
+        Statistic: Maximum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 5
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopicMedium
+    errorAlarmMedium:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-medium-${self:provider.stage}-error-alarm
+        AlarmDescription: Notify when number of errors exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureMediumLambdaFunction
+        MetricName: Errors
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopicMedium
 
 plugins:
   - serverless-plugin-git-variables

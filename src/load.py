@@ -8,8 +8,10 @@ from .etl.event_processor import TriggerEvent
 from .etl.rds import RDS
 from .etl.config import CONFIG
 
+log_level = os.getenv('LOG_LEVEL', logging.ERROR)
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
 
 def etl(trigger_event):
