@@ -24,7 +24,8 @@ provider:
     "wma:contact": "Jim Kreft jkreft@usgs.gov"
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": "0.0.1"
-    "wma:organization": "IOW"
+    "wma:organization": IOW
+    "displayName": "Raw Load"
     commitIdentifier: ${git:sha1}
 
 custom:
