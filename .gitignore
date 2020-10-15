@@ -6,3 +6,5 @@ env/
 src/__pycache__/
 src/etl/__pycache__/
 src/etl/test/__pycache__/
+.serverless/
+node_modules/
