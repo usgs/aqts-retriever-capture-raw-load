@@ -4,6 +4,22 @@ pipeline {
     agent {
         node {
             label 'team:iow'
+        }
+    }
+    parameters {
+        choice(choices: ['DEV', 'TEST', 'QA', 'PROD-EXTERNAL'], description: 'Deploy Stage (i.e. tier)', name: 'DEPLOY_STAGE')
+    }
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+    stages {
+        stage('run build the zip file for lambda') {
+            agent {
+                dockerfile {
+                    label 'team:iow'
+                }
+            }
+            steps {
                 script {
                     if ("${params.DEPLOY_STAGE}" == 'DEV') {
                         def secretsString = sh(script: '/usr/local/bin/aws ssm get-parameter --name "/aws/reference/secretsmanager/IOW_AWS" --query "Parameter.Value" --with-decryption --output text --region "us-west-2"', returnStdout: true).trim()
@@ -22,22 +38,6 @@ pipeline {
                         env.BUCKET = 'iow-cloud-applications'
                     }
                 }
-        }
-    }
-    parameters {
-        choice(choices: ['DEV', 'TEST', 'QA', 'PROD-EXTERNAL'], description: 'Deploy Stage (i.e. tier)', name: 'DEPLOY_STAGE')
-    }
-    triggers {
-        pollSCM('H/5 * * * *')
-    }
-    stages {
-        stage('run build the zip file for lambda') {
-            agent {
-                dockerfile {
-                    label 'team:iow'
-                }
-            }
-            steps {
                 sh '''
                 npm install
                 ./node_modules/serverless/bin/serverless.js deploy --stage ${DEPLOY_STAGE} --bucket ${BUCKET} --region us-west-2
