@@ -4,11 +4,13 @@ This module handles processing of a file object in S3.
 """
 import json
 import logging
+import os
 
 from .s3 import S3
 
+log_level = os.getenv('LOG_LEVEL', logging.ERROR)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
 BODY = 'body'
 STRING_VALUE = 'StringValue'

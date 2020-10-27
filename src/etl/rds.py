@@ -8,6 +8,7 @@ from psycopg2 import OperationalError, DataError, IntegrityError
 # json allows us to convert between dictionaries and json.
 import json
 import datetime
+import os
 
 # project specific configuration parameters.
 from .config import CONFIG
@@ -15,8 +16,9 @@ from .config import CONFIG
 # allows for logging information
 import logging
 
+log_level = os.getenv('LOG_LEVEL', logging.ERROR)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
 
 def convert_total_seconds_to_datetime(total_seconds):
