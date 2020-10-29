@@ -154,7 +154,7 @@ resources:
       Properties:
         DisplayName: ${self:service}-small-${self:provider.stage}-topic
         TopicName: ${self:service}-small-${self:provider.stage}-topic
-      concurrencyAlarmMedium:
+      concurrencyAlarmSmall:
         Type: AWS::CloudWatch::Alarm
         Properties:
           AlarmName: ${self:service}-small-${self:provider.stage}-concurrency-alarm
