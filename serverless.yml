@@ -154,42 +154,42 @@ resources:
       Properties:
         DisplayName: ${self:service}-small-${self:provider.stage}-topic
         TopicName: ${self:service}-small-${self:provider.stage}-topic
-      concurrencyAlarmSmall:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-          AlarmName: ${self:service}-small-${self:provider.stage}-concurrency-alarm
-          AlarmDescription: Notify when concurrency exceeds the specified threshold
-          Namespace: 'AWS/Lambda'
-          Dimensions:
-            - Name: FunctionName
-              Value:
-                Ref: IowCaptureSmallLambdaFunction
-          MetricName: ConcurrentExecutions
-          Statistic: Maximum
-          ComparisonOperator: GreaterThanOrEqualToThreshold
-          Threshold: 5
-          Period: 60
-          EvaluationPeriods: 1
-          AlarmActions:
-            - Ref: snsTopicSmall
-      errorAlarmSmall:
-        Type: AWS::CloudWatch::Alarm
-        Properties:
-          AlarmName: ${self:service}-small-${self:provider.stage}-error-alarm
-          AlarmDescription: Notify when number of errors exceeds the specified threshold
-          Namespace: 'AWS/Lambda'
-          Dimensions:
-            - Name: FunctionName
-              Value:
-                Ref: IowCaptureSmallLambdaFunction
-          MetricName: Errors
-          Statistic: Sum
-          ComparisonOperator: GreaterThanOrEqualToThreshold
-          Threshold: 10
-          Period: 60
-          EvaluationPeriods: 1
-          AlarmActions:
-            - Ref: snsTopicSmall
+    concurrencyAlarmSmall:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-small-${self:provider.stage}-concurrency-alarm
+        AlarmDescription: Notify when concurrency exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureSmallLambdaFunction
+        MetricName: ConcurrentExecutions
+        Statistic: Maximum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 5
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopicSmall
+    errorAlarmSmall:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-small-${self:provider.stage}-error-alarm
+        AlarmDescription: Notify when number of errors exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureSmallLambdaFunction
+        MetricName: Errors
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopicSmall
 
 
 plugins:
