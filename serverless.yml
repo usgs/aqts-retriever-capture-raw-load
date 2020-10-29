@@ -41,10 +41,18 @@ custom:
     connectInfo: ${ssm:/aws/reference/secretsmanager/NWCAPTURE-DB-${self:provider.stage}~true}
 
 functions:
+
+  iowCaptureSmall:
+    handler: src.load.lambda_handler
+    memorySize: 256
+    reservedConcurrency: 25
+    environment:
+      S3_OBJECT_SIZE_LIMIT: 25600000
+
   iowCapture:
     handler: src.load.lambda_handler
     memorySize: 512
-    reservedConcurrency: 50
+    reservedConcurrency: 25
     environment:
       S3_OBJECT_SIZE_LIMIT: 51200000
 
@@ -140,6 +148,49 @@ resources:
         EvaluationPeriods: 1
         AlarmActions:
           - Ref: snsTopicMedium
+
+    snsTopicSmall:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-small-${self:provider.stage}-topic
+        TopicName: ${self:service}-small-${self:provider.stage}-topic
+      concurrencyAlarmMedium:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+          AlarmName: ${self:service}-small-${self:provider.stage}-concurrency-alarm
+          AlarmDescription: Notify when concurrency exceeds the specified threshold
+          Namespace: 'AWS/Lambda'
+          Dimensions:
+            - Name: FunctionName
+              Value:
+                Ref: IowCaptureSmallLambdaFunction
+          MetricName: ConcurrentExecutions
+          Statistic: Maximum
+          ComparisonOperator: GreaterThanOrEqualToThreshold
+          Threshold: 5
+          Period: 60
+          EvaluationPeriods: 1
+          AlarmActions:
+            - Ref: snsTopicSmall
+      errorAlarmSmall:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+          AlarmName: ${self:service}-small-${self:provider.stage}-error-alarm
+          AlarmDescription: Notify when number of errors exceeds the specified threshold
+          Namespace: 'AWS/Lambda'
+          Dimensions:
+            - Name: FunctionName
+              Value:
+                Ref: IowCaptureSmallLambdaFunction
+          MetricName: Errors
+          Statistic: Sum
+          ComparisonOperator: GreaterThanOrEqualToThreshold
+          Threshold: 10
+          Period: 60
+          EvaluationPeriods: 1
+          AlarmActions:
+            - Ref: snsTopicSmall
+
 
 plugins:
   - serverless-plugin-git-variables
