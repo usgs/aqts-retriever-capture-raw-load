@@ -42,17 +42,24 @@ custom:
 
 functions:
 
+  iowCaptureExtraSmall:
+    handler: src.load.lambda_handler
+    memorySize: 128
+    reservedConcurrency: 20
+    environment:
+      S3_OBJECT_SIZE_LIMIT: 12800000
+
   iowCaptureSmall:
     handler: src.load.lambda_handler
     memorySize: 256
-    reservedConcurrency: 25
+    reservedConcurrency: 20
     environment:
       S3_OBJECT_SIZE_LIMIT: 25600000
 
   iowCapture:
     handler: src.load.lambda_handler
     memorySize: 512
-    reservedConcurrency: 25
+    reservedConcurrency: 10
     environment:
       S3_OBJECT_SIZE_LIMIT: 51200000
 
@@ -83,7 +90,7 @@ resources:
         MetricName: ConcurrentExecutions
         Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 50
+        Threshold: 10
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
@@ -106,7 +113,6 @@ resources:
         EvaluationPeriods: 1
         AlarmActions:
           - Ref: snsTopic
-
     snsTopicMedium:
       Type: AWS::SNS::Topic
       Properties:
@@ -167,7 +173,7 @@ resources:
         MetricName: ConcurrentExecutions
         Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 5
+        Threshold: 20
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
@@ -191,6 +197,47 @@ resources:
         AlarmActions:
           - Ref: snsTopicSmall
 
+    snsTopicExtraSmall:
+      Type: AWS::SNS::Topic
+      Properties:
+        DisplayName: ${self:service}-extra-small-${self:provider.stage}-topic
+        TopicName: ${self:service}-extra-small-${self:provider.stage}-topic
+    concurrencyAlarmExtraSmall:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-extra-small-${self:provider.stage}-concurrency-alarm
+        AlarmDescription: Notify when concurrency exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureExtraSmallLambdaFunction
+        MetricName: ConcurrentExecutions
+        Statistic: Maximum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 20
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopicSmall
+    errorAlarmExtraSmall:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-extra-small-${self:provider.stage}-error-alarm
+        AlarmDescription: Notify when number of errors exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: IowCaptureSmallLambdaFunction
+        MetricName: Errors
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopicSmall
 
 plugins:
   - serverless-plugin-git-variables
