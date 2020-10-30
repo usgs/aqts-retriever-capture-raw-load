@@ -44,32 +44,31 @@ functions:
 
   iowCaptureExtraSmall:
     handler: src.load.lambda_handler
-    memorySize: 192
+    memorySize: 256
     reservedConcurrency: 30
     environment:
-      LOG_LEVEL: DEBUG
-      S3_OBJECT_SIZE_LIMIT: 19200000
+      S3_OBJECT_SIZE_LIMIT: 25600000
 
   iowCaptureSmall:
     handler: src.load.lambda_handler
-    memorySize: 384
+    memorySize: 512
     reservedConcurrency: 15
     environment:
-      S3_OBJECT_SIZE_LIMIT: 38400000
+      S3_OBJECT_SIZE_LIMIT: 51200000
 
   iowCapture:
     handler: src.load.lambda_handler
-    memorySize: 768
+    memorySize: 1024
     reservedConcurrency: 5
     environment:
-      S3_OBJECT_SIZE_LIMIT: 76800000
+      S3_OBJECT_SIZE_LIMIT: 102400000
 
   iowCaptureMedium:
     handler: src.load.lambda_handler
-    memorySize: 1532
+    memorySize: 1536
     reservedConcurrency: 5
     environment:
-      S3_OBJECT_SIZE_LIMIT: 153200000
+      S3_OBJECT_SIZE_LIMIT: 153600000
 
 resources:
   Resources:
