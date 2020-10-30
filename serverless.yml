@@ -47,6 +47,7 @@ functions:
     memorySize: 192
     reservedConcurrency: 30
     environment:
+      LOG_LEVEL: DEBUG
       S3_OBJECT_SIZE_LIMIT: 19200000
 
   iowCaptureSmall:
