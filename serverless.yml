@@ -4,13 +4,19 @@ service: aqts-capture-raw-load
 
 provider:
   name: aws
+  # discovered that putting both a `role` and `rolePermissionBoundary` in `provider` causes the latter to be omitted
+  # the role has been split out and placed in the individual lambda defintions
+  rolePermissionsBoundary:
+    Fn::Sub:
+      - "arn:aws:iam::${accountId}:policy/csr-Developer-Permissions-Boundary"
+      - accountId:
+         Ref: "AWS::AccountId"
+  vpc: ${self:custom.vpc}
   region: ${opt:region, 'us-west-2'}
   stage: ${opt:stage, 'TEST'}
   runtime: python3.8
   timeout: 70
   logRetentionInDays: 90
-  role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
-  vpc: ${self:custom.vpc}
   environment:
     DB_HOST: ${self:custom.db.connectInfo.DATABASE_ADDRESS}
     DB_USER: ${self:custom.db.connectInfo.SCHEMA_OWNER_USERNAME}
@@ -39,11 +45,21 @@ custom:
     subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
   db:
     connectInfo: ${ssm:/aws/reference/secretsmanager/NWCAPTURE-DB-${self:provider.stage}~true}
+  esLogs:
+    endpoint: ${ssm:/iow/aws/vpc/${self:provider.stage}/elasticsearchEndpoint}
+    index: ${self:service}
+    retentionInDays: 90
+    filterPattern: "?ERROR ?CRITICAL"
 
 functions:
 
   iowCaptureExtraSmall:
     handler: src.load.lambda_handler
+    role:
+      Fn::Sub:
+        - arn:aws:iam::${accountId}:role/csr-Lambda-Role
+        - accountId:
+            Ref: AWS::AccountId
     memorySize: 256
     reservedConcurrency: 30
     environment:
@@ -51,6 +67,11 @@ functions:
 
   iowCaptureSmall:
     handler: src.load.lambda_handler
+    role:
+      Fn::Sub:
+        - arn:aws:iam::${accountId}:role/csr-Lambda-Role
+        - accountId:
+            Ref: AWS::AccountId
     memorySize: 512
     reservedConcurrency: 15
     environment:
@@ -58,6 +79,11 @@ functions:
 
   iowCapture:
     handler: src.load.lambda_handler
+    role:
+      Fn::Sub:
+        - arn:aws:iam::${accountId}:role/csr-Lambda-Role
+        - accountId:
+            Ref: AWS::AccountId
     memorySize: 1024
     reservedConcurrency: 5
     environment:
@@ -65,6 +91,11 @@ functions:
 
   iowCaptureMedium:
     handler: src.load.lambda_handler
+    role:
+      Fn::Sub:
+        - arn:aws:iam::${accountId}:role/csr-Lambda-Role
+        - accountId:
+            Ref: AWS::AccountId
     memorySize: 1536
     reservedConcurrency: 5
     environment:
@@ -242,8 +273,8 @@ resources:
 
 plugins:
   - serverless-plugin-git-variables
-  - serverless-pseudo-parameters
   - serverless-python-requirements
+  - serverless-es-logs
 
 package:
   exclude:
