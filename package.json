@@ -2,7 +2,7 @@
   "name": "aquarius-ts-capture-trigger",
   "description": "Deployment via serverless",
   "dependencies": {
-    "serverless": "2.11.1",
+    "serverless": "2.14.0",
     "serverless-python-requirements": "^5.1.0",
     "serverless-plugin-git-variables": "^5.0.1",
     "serverless-es-logs": "^3.4.1"
