@@ -26,7 +26,9 @@ provider:
   deploymentBucket:
     name: ${opt:bucket, iow-cloud-applications}
   stackTags:
-    "wma:applicationId": "Aquarius TS Retriever Capture Raw Loader"
+    "wma:project_id": "aqtscapture"
+    "wma:subSystem": "aqtscapture"
+    "wma:application_id": "Aquarius TS Retriever Capture Raw Loader"
     "wma:contact": "Jim Kreft jkreft@usgs.gov"
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": "0.0.1"
