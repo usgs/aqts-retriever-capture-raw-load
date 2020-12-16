@@ -37,6 +37,9 @@ provider:
     commitIdentifier: ${git:sha1}
 
 custom:
+  prune:
+    automatic: true
+    number: 3
   exportGitVariables: false
   environments:
     TEST: test
@@ -276,6 +279,7 @@ resources:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
+  - serverless-prune-plugin
   - serverless-es-logs
 
 package:
